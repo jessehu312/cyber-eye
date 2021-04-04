@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "@/lib/auth";
 import Navbar from "@/components/home/Navbar";
 import SocialSignIn from "./SocialSignIn";
 import Loader from "../shared/Loader";
@@ -31,8 +29,14 @@ const Header = () => {
   };
 
   useEffect(() => {
+    if (!!document.getElementById("maps-api") === true) {
+      setLoaded(false);
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places`;
+    script.setAttribute("id", "maps-api");
 
     script.addEventListener("load", () => {
       setTimeout(() => {

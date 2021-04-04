@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/home/Navbar";
 import { useRouter } from "next/router";
 import Tabs from "@/components/home/Tabs";
+import { ToastContainer, toast } from "react-toastify";
 
 import DeckGL, {
   HexagonLayer,
@@ -15,12 +16,16 @@ import { PieChart } from "react-minimal-pie-chart";
 import sourceData from "../data/gundata.json";
 import Loader from "@/components/shared/Loader";
 import SafetyCard from "@/components/maps/SafetyCard";
+import AlertModal from "@/components/maps/AlertModal";
+import queryString from "query-string";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-const Maps = () => {
+const Maps = ({ location }) => {
   const router = useRouter();
-  const { lat, lng, address } = router.query;
+  const { lat, lng, address } = queryString.parse(
+    router.asPath.substr(router.asPath.indexOf("?"))
+  );
   const [initialViewState, setInitialViewState] = useState();
 
   const [hoverInfo, setHoverInfo] = useState();
@@ -32,7 +37,8 @@ const Maps = () => {
     width: "100%",
   });
 
-  const [safetyScore, setSaferyScore] = useState(48);
+  const [alertModal, setAlertModal] = useState(false);
+  const [safetyScore, setSaferyScore] = useState(72);
 
   const scatterplot = () =>
     new ScatterplotLayer({
@@ -83,7 +89,6 @@ const Maps = () => {
       ],
     });
 
-  //scatterplot(), heatmap(),
   const layers = [scatterplot(), hexagon(), heatmap()];
 
   const goHome = () => {
@@ -121,6 +126,13 @@ const Maps = () => {
 
   useEffect(() => {
     if (!lat || !lng || !address) router.push("/");
+    if (!!!document.getElementById("maps-api")) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places`;
+      script.setAttribute("id", "maps-api");
+      document.body.append(script);
+    }
+
     const selectedLocation = {
       latitude: parseInt(lat),
       longitude: parseInt(lng),
@@ -135,6 +147,7 @@ const Maps = () => {
 
   return (
     <div className='min-h-screen bg-black'>
+      <ToastContainer />
       <Navbar />
       <div className='max-w-screen-lg mx-auto relative px-6 xl:px-0'>
         <div className='relative mb-4'>
@@ -149,6 +162,12 @@ const Maps = () => {
               onClick={updateAddress}
               className='bg-secondary py-2 px-4 text-white rounded-lg focus:ring-2 focus:outline-none border-none focus:ring-cyan-800'>
               Search
+            </button>
+            <button
+              onClick={() => setAlertModal(true)}
+              style={{ whiteSpace: "nowrap" }}
+              className='py-2 px-4 text-secondary rounded-lg text-center border border-secondary'>
+              Get Alerts
             </button>
           </div>
           <svg
@@ -189,7 +208,7 @@ const Maps = () => {
               />
               {hoverInfo && (
                 <div
-                  className='bg-gray-900 text-white p-2 rounded-sm border-primary border-2 max-w-sm'
+                  className='cursor-pointer bg-gray-900 text-white p-2 rounded-sm border-primary border-2 max-w-sm'
                   style={{
                     position: "absolute",
                     zIndex: 1,
@@ -320,6 +339,13 @@ const Maps = () => {
             </div>
           </div>
         </div>
+      )}
+      {alertModal && (
+        <AlertModal
+          setOpen={setAlertModal}
+          initialViewState={initialViewState}
+          address={selectedAddress}
+        />
       )}
     </div>
   );

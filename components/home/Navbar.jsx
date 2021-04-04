@@ -7,7 +7,7 @@ const Navbar = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
 
   return (
     <div className='mx-auto container relative px-6 xl:px-0'>
@@ -24,7 +24,7 @@ const Navbar = () => {
           <div className='flex'>
             <ul className='font-normal text-lg flex space-x-16 justify-between items-center text-white'>
               <li className='text-white cursor-pointer'>
-                <a className='bg-primary py-2 px-3 rounded-full text-sm'>
+                <a className='bg-primary py-2 px-3 rounded-full text-sm' onClick={() => router.push('/report')}>
                   Report a Crime
                 </a>
               </li>
