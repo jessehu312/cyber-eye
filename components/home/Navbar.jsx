@@ -22,20 +22,31 @@ const Navbar = () => {
             </h1>
           </div>
           <div className='flex'>
-            <ul className='font-normal text-lg flex space-x-16 justify-between items-center text-white'>
+            <ul className='font-normal text-lg flex space-x-8 justify-between items-center text-white'>
               <li className='text-white cursor-pointer'>
-                <a className='bg-primary py-2 px-3 rounded-full text-sm' onClick={() => router.push('/report')}>
+                <a
+                  className='bg-primary py-2 px-3 rounded-full text-sm'
+                  onClick={() => router.push("/report")}>
                   Report a Crime
                 </a>
               </li>
               {user ? (
-                <li className='text-white cursor-pointer'>
-                  <img
-                    className='h-10 w-10 rounded-full'
-                    src={user.photoUrl}
-                    alt={user.name}
-                  />
-                </li>
+                <>
+                  <li className='text-white cursor-pointer'>
+                    <a
+                      className='bg-primary py-2 px-3 rounded-full text-sm'
+                      onClick={() => router.push("/zones")}>
+                      My Zones
+                    </a>
+                  </li>
+                  <li className='text-white cursor-pointer'>
+                    <img
+                      className='h-10 w-10 rounded-full'
+                      src={user.photoUrl}
+                      alt={user.name}
+                    />
+                  </li>
+                </>
               ) : (
                 <li className='text-white cursor-pointer'>
                   <a
