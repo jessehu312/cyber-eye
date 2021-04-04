@@ -50,13 +50,14 @@ const Maps = ({ location }) => {
       filled: true,
       radiusMinPixels: 2,
       radiusMaxPixels: 8,
-      getPosition: (d) => [d.longitude, d.latitude],
-      getFillColor: (d) =>
-        d.n_killed > 0 ? [200, 0, 40, 150] : [255, 140, 0, 100],
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
+      getFillColor: ([_0, _1, n_killed]) =>
+        n_killed > 0 ? [200, 0, 40, 150] : [255, 140, 0, 100],
 
       pickable: true,
       onClick: (info) => {
-        setHoverInfo(info);
+        const [incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories] = info.object
+        setHoverInfo({...info, object: {incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories}});
       },
     });
 
@@ -64,8 +65,8 @@ const Maps = ({ location }) => {
     new HeatmapLayer({
       id: "heat",
       data,
-      getPosition: (d) => [d.longitude, d.latitude],
-      getWeight: (d) => d.n_killed + d.n_injured * 0.5,
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
+      getWeight: ([_0, _1, n_killed, n_injured]) => n_killed + n_injured * 0.5,
       radiusPixels: 60,
     });
 
@@ -73,8 +74,8 @@ const Maps = ({ location }) => {
     new HexagonLayer({
       id: "hex",
       data,
-      getPosition: (d) => [d.longitude, d.latitude],
-      getElevationWeight: (d) => d.n_killed * 2 + d.n_injured,
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
+      getElevationWeight: ([_0, _1, n_killed, n_injured]) => n_killed * 2 + n_injured,
       elevationScale: 100,
       extruded: true,
       radius: 1609,
