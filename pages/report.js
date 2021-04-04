@@ -7,8 +7,6 @@ const Report = () => {
   const [report, setReport] = useState();
   const [personalInfo, setPersonalInfo] = useState();
 
-  console.log(!!document.getElementById("maps-api"));
-
   useEffect(() => {
     if (!!document.getElementById("maps-api") === true) return;
 
