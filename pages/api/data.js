@@ -1,6 +1,15 @@
 import axios from "axios";
+import cache from "memory-cache";
+
+const dataCache = new cache.Cache();
 
 export default async ({query: {type}}, res) => {
+
+  const cachedResult = dataCache.get(type);
+  if (cachedResult) {
+    return res.json(cachedResult);
+  }
+
   let result = null;
 
   switch (type) {
@@ -17,5 +26,7 @@ export default async ({query: {type}}, res) => {
     default:
       return res.status(404);
   }
+  
+  dataCache.put(type, result.data);
   res.json(result.data);
 };
