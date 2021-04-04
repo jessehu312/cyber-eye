@@ -13,11 +13,12 @@ import DeckGL, {
 import { NavigationControl, StaticMap, MapContext } from "react-map-gl";
 import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
 import { PieChart } from "react-minimal-pie-chart";
-import sourceData from "../data/gundata.json";
 import Loader from "@/components/shared/Loader";
 import SafetyCard from "@/components/maps/SafetyCard";
 import AlertModal from "@/components/maps/AlertModal";
 import queryString from "query-string";
+import axios from "axios";
+import LoadingModal from "@/components/shared/LoadingModal";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -39,11 +40,12 @@ const Maps = ({ location }) => {
 
   const [alertModal, setAlertModal] = useState(false);
   const [safetyScore, setSaferyScore] = useState(72);
+  const [layers, setLayers] = useState([]);
 
-  const scatterplot = () =>
+  const scatterplot = data =>
     new ScatterplotLayer({
       id: "scatter",
-      data: sourceData,
+      data,
       opacity: 0.8,
       filled: true,
       radiusMinPixels: 2,
@@ -58,19 +60,19 @@ const Maps = ({ location }) => {
       },
     });
 
-  const heatmap = () =>
+  const heatmap = data =>
     new HeatmapLayer({
       id: "heat",
-      data: sourceData,
+      data,
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.n_killed + d.n_injured * 0.5,
       radiusPixels: 60,
     });
 
-  const hexagon = () =>
+  const hexagon = data =>
     new HexagonLayer({
       id: "hex",
-      data: sourceData,
+      data,
       getPosition: (d) => [d.longitude, d.latitude],
       getElevationWeight: (d) => d.n_killed * 2 + d.n_injured,
       elevationScale: 100,
@@ -88,8 +90,6 @@ const Maps = ({ location }) => {
         [169, 221, 214],
       ],
     });
-
-  const layers = [scatterplot(), hexagon(), heatmap()];
 
   const goHome = () => {
     setInitialViewState({
@@ -140,6 +140,11 @@ const Maps = ({ location }) => {
       bearing: 0,
       pitch: 30,
     };
+    
+    axios.get('api/data?type=gun')
+    .then(({ data }) => {
+      setLayers([scatterplot(data), hexagon(data), heatmap(data)]);
+    });
 
     setInitialViewState(selectedLocation);
     setMapLoading(false);
@@ -347,6 +352,7 @@ const Maps = ({ location }) => {
           address={selectedAddress}
         />
       )}
+      {!layers.length && <LoadingModal><p className="text-white">Loading Crime Data</p></LoadingModal>}
     </div>
   );
 };
