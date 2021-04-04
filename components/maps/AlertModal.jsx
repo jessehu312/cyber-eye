@@ -17,7 +17,7 @@ const AlertModal = ({ setOpen, initialViewState, address }) => {
         lat: initialViewState.latitude,
         lng: initialViewState.longitude,
       };
-      await createNotificationInstance({ phone, radius, coordinates })
+      await createNotificationInstance({ phone, radius, address, coordinates })
         .then(() => {
           axios.post("http://localhost:3000/api/message", {
             phone,
@@ -123,7 +123,9 @@ const AlertModal = ({ setOpen, initialViewState, address }) => {
                 value={radius}
                 onChange={(e) => setRadius(e.target.value)}
                 id='number'
-                className='py-3 text-white font-bold dark:text-gray-400 bg-transparent focus:outline-none focus:border focus:border-secondary font-normal w-full pl-16 text-sm border-gray-300 dark:border-gray-700 rounded border shadow'
+                type='number'
+                min='0'
+                className='py-3 text-white font-bold dark:text-gray-400 bg-transparent focus:outline-none focus:border focus:border-secondary font-normal w-full pl-16 pr-2 text-sm border-gray-300 dark:border-gray-700 rounded border shadow'
                 placeholder='Radius (in miles)'
               />
             </div>

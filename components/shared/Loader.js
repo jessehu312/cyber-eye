@@ -1,6 +1,8 @@
 const Loader = ({ large }) => (
   <svg
-    className={`animate-spin h-8 w-8 m-4 text-primary ${large && "h-12 w-12"}`}
+    className={`animate-spin h-8 w-8 m-4 text-primary ${
+      large ? "h-12 w-12" : ""
+    }`}
     xmlns='http://www.w3.org/2000/svg'
     fill='none'
     viewBox='0 0 24 24'>

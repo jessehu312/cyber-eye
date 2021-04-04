@@ -3,7 +3,6 @@ import Navbar from "@/components/home/Navbar";
 import { useRouter } from "next/router";
 import Tabs from "@/components/home/Tabs";
 import { ToastContainer, toast } from "react-toastify";
-
 import DeckGL, {
   HexagonLayer,
   ScatterplotLayer,
@@ -12,23 +11,23 @@ import DeckGL, {
 } from "deck.gl";
 import { NavigationControl, StaticMap, MapContext } from "react-map-gl";
 import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
-import { PieChart } from "react-minimal-pie-chart";
 import Loader from "@/components/shared/Loader";
-import SafetyCard from "@/components/maps/SafetyCard";
 import AlertModal from "@/components/maps/AlertModal";
+import SafetyScore from "@/components/maps/SafetyScore";
 import queryString from "query-string";
-import axios from "axios";
 import LoadingModal from "@/components/shared/LoadingModal";
+import axios from "axios";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-const Maps = ({ location }) => {
+const Maps = () => {
   const router = useRouter();
   const { lat, lng, address } = queryString.parse(
     router.asPath.substr(router.asPath.indexOf("?"))
   );
-  const [initialViewState, setInitialViewState] = useState();
 
+  const [coors, setCoors] = useState({ lat, lng });
+  const [initialViewState, setInitialViewState] = useState();
   const [hoverInfo, setHoverInfo] = useState();
   const [mapLoading, setMapLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(address);
@@ -39,43 +38,77 @@ const Maps = ({ location }) => {
   });
 
   const [alertModal, setAlertModal] = useState(false);
-  const [safetyScore, setSaferyScore] = useState(72);
   const [layers, setLayers] = useState([]);
 
-  const scatterplot = data =>
-    new ScatterplotLayer({
+  const scatterplot = (data) => {
+    return new ScatterplotLayer({
       id: "scatter",
       data,
       opacity: 0.8,
       filled: true,
       radiusMinPixels: 2,
       radiusMaxPixels: 8,
-      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [
+        longitude,
+        latitude,
+      ],
       getFillColor: ([_0, _1, n_killed]) =>
         n_killed > 0 ? [200, 0, 40, 150] : [255, 140, 0, 100],
-  
+
       pickable: true,
       onClick: (info) => {
-        const [incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories] = info.object
-        setHoverInfo({...info, object: {incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories}});
+        const [
+          incident_id,
+          date,
+          n_killed,
+          n_injured,
+          latitude,
+          longitude,
+          location,
+          notes,
+          categories,
+        ] = info.object;
+        setHoverInfo({
+          ...info,
+          object: {
+            incident_id,
+            date,
+            n_killed,
+            n_injured,
+            latitude,
+            longitude,
+            location,
+            notes,
+            categories,
+          },
+        });
       },
     });
-  
-  const heatmap = data =>
-    new HeatmapLayer({
+  };
+
+  const heatmap = (data) => {
+    return new HeatmapLayer({
       id: "heat",
       data,
-      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [
+        longitude,
+        latitude,
+      ],
       getWeight: ([_0, _1, n_killed, n_injured]) => n_killed + n_injured * 0.5,
       radiusPixels: 60,
     });
-  
-  const hexagon = data =>
-    new HexagonLayer({
+  };
+
+  const hexagon = (data) => {
+    return new HexagonLayer({
       id: "hex",
       data,
-      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
-      getElevationWeight: ([_0, _1, n_killed, n_injured]) => n_killed * 2 + n_injured,
+      getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [
+        longitude,
+        latitude,
+      ],
+      getElevationWeight: ([_0, _1, n_killed, n_injured]) =>
+        n_killed * 2 + n_injured,
       elevationScale: 100,
       extruded: true,
       radius: 1609,
@@ -91,25 +124,53 @@ const Maps = ({ location }) => {
         [169, 221, 214],
       ],
     });
-  
-    const crimeScatterplot = data =>
-      new ScatterplotLayer({
-        id: "crime-scatter",
-        data,
-        opacity: 0.8,
-        filled: true,
-        radiusMinPixels: 2,
-        radiusMaxPixels: 8,
-        getPosition: ([_0, _1, _2, _3, _4, _5, _6, _7, latitude, longitude]) => [longitude, latitude],
-        getFillColor: ([_0, _1, _2, _3, _4, _5, arrest]) =>
-          arrest ? [125, 125, 125, 255] : [255, 255, 255, 255],
-    
-        pickable: true,
-        onClick: (info) => {
-          const [incident_id, date, block, primary_desc, secondary_desc, location_desc, arrest, domestic, latitude, longitude] = info.object
-          setHoverInfo({...info, object: {incident_id, date, latitude, longitude, location:`${location_desc} - ${block}`, notes:`${primary_desc} - ${secondary_desc}`, arrest, domestic}});
-        },
-      });
+  };
+
+  const crimeScatterplot = (data) => {
+    return new ScatterplotLayer({
+      id: "crime-scatter",
+      data,
+      opacity: 0.8,
+      filled: true,
+      radiusMinPixels: 2,
+      radiusMaxPixels: 8,
+      getPosition: ([_0, _1, _2, _3, _4, _5, _6, _7, latitude, longitude]) => [
+        longitude,
+        latitude,
+      ],
+      getFillColor: ([_0, _1, _2, _3, _4, _5, arrest]) =>
+        arrest ? [125, 125, 125, 255] : [255, 255, 255, 255],
+
+      pickable: true,
+      onClick: (info) => {
+        const [
+          incident_id,
+          date,
+          block,
+          primary_desc,
+          secondary_desc,
+          location_desc,
+          arrest,
+          domestic,
+          latitude,
+          longitude,
+        ] = info.object;
+        setHoverInfo({
+          ...info,
+          object: {
+            incident_id,
+            date,
+            latitude,
+            longitude,
+            location: `${location_desc} - ${block}`,
+            notes: `${primary_desc} - ${secondary_desc}`,
+            arrest,
+            domestic,
+          },
+        });
+      },
+    });
+  };
 
   const goHome = () => {
     setInitialViewState({
@@ -131,7 +192,6 @@ const Maps = ({ location }) => {
         console.log(latLng);
         const { lat, lng } = latLng;
         setInitialViewState({
-          ...initialViewState,
           latitude: parseInt(lat),
           longitude: parseInt(lng),
           zoom: 7,
@@ -140,16 +200,27 @@ const Maps = ({ location }) => {
           transitionDuration: 5000,
           transitionInterpolator: new FlyToInterpolator(),
         });
+
+        setCoors({ lat, lng });
       })
       .catch((error) => console.error("Error", error));
   };
 
   useEffect(() => {
     if (!lat || !lng || !address) router.push("/");
-    
-    Promise.all([axios.get('api/data?type=gun').then(({data})=>data), axios.get('api/data?type=crime').then(({data})=>data)])
-    .then(([gunData, crimeData]) => setLayers([scatterplot(gunData), hexagon(gunData), heatmap(gunData), crimeScatterplot(crimeData)]));
-    
+
+    Promise.all([
+      axios.get("api/data?type=gun").then(({ data }) => data),
+      axios.get("api/data?type=crime").then(({ data }) => data),
+    ]).then(([gunData, crimeData]) =>
+      setLayers([
+        scatterplot(gunData),
+        hexagon(gunData),
+        heatmap(gunData),
+        crimeScatterplot(crimeData),
+      ])
+    );
+
     //axios.get('api/data?type=gun')
     //.then(({gunData})=>setLayers([scatterplot(gunData), hexagon(gunData), heatmap(gunData)]))
     //.then(()=>axios.get('api/data?type=crime'))
@@ -213,9 +284,7 @@ const Maps = ({ location }) => {
             />
           </svg>
         </div>
-        <div className='text-white py-8 text-2xl font-semibold tracking-tight'>
-          <Tabs />
-        </div>
+        <div className='py-8' />
       </div>
       {mapLoading ? (
         <div className='w-full flex justify-center'>
@@ -261,7 +330,8 @@ const Maps = ({ location }) => {
                         <p className='text-xs'>
                           # Injured: {hoverInfo?.object?.n_injured} 🤕
                         </p>
-                      </> ) : (
+                      </>
+                    ) : (
                       <>
                         <p className='text-xs border-r pr-2'>
                           Arrest: {hoverInfo?.object?.arrest} 🚨
@@ -269,8 +339,8 @@ const Maps = ({ location }) => {
                         <p className='text-xs'>
                           Domestic: {hoverInfo?.object?.domestic} 👊
                         </p>
-                      </> )
-                    }
+                      </>
+                    )}
                   </div>
                   <div className='flex flex-row space-x-2 mt-2 pb-2'>
                     <p className='text-xs border-r pr-2'>
@@ -304,80 +374,7 @@ const Maps = ({ location }) => {
             </DeckGL>
           </div>
           <div className='relative bg-dark-gray flex-1 md:min-h-75vh'>
-            <div className='text-white px-4 pt-8'>
-              <h1 className='text-4xl md:text-xl xl:text-3xl font-extrabold tracking-tight text-center'>
-                Safety Score
-              </h1>
-              <div className='w-full flex flex-row justify-center relative -mt-6'>
-                {safetyScore < 50 ? (
-                  <PieChart
-                    style={{ position: "relative" }}
-                    data={[{ value: safetyScore, color: "url(#gradient1)" }]}
-                    lineWidth={20}
-                    label={({ dataEntry }) => dataEntry.value + "%"}
-                    labelStyle={{
-                      fontSize: "14px",
-                      fontFamily: "sans-serif",
-                      fill: "#9D1525",
-                      fontWeight: 900,
-                    }}
-                    labelPosition={0}
-                    rounded
-                    animate
-                    animationDuration={5000}
-                    startAngle={0}
-                    endAngle={360}
-                    radius={30}>
-                    <defs>
-                      <linearGradient id='gradient1'>
-                        <stop offset='0%' stopColor='#9D1525' />
-                        <stop offset='65%' stopColor='#8A0B21' />
-                        <stop offset='100%' stopColor='#560616' />
-                      </linearGradient>
-                    </defs>
-                  </PieChart>
-                ) : (
-                  <PieChart
-                    style={{ position: "relative" }}
-                    data={[{ value: safetyScore, color: "url(#gradient1)" }]}
-                    lineWidth={20}
-                    label={({ dataEntry }) => dataEntry.value + "%"}
-                    labelStyle={{
-                      fontSize: "14px",
-                      fontFamily: "sans-serif",
-                      fill: safetyScore < 50 ? "#9D1525" : "#2DB52D",
-                      fontWeight: 900,
-                    }}
-                    labelPosition={0}
-                    rounded
-                    animate
-                    animationDuration={5000}
-                    startAngle={0}
-                    endAngle={360}
-                    radius={30}>
-                    <defs>
-                      <linearGradient id='gradient1'>
-                        <stop offset='0%' stopColor='#57C74D' />
-                        <stop offset='65%' stopColor='#2DB52D' />
-                        <stop offset='100%' stopColor='#2DB52D' />
-                      </linearGradient>
-                    </defs>
-                  </PieChart>
-                )}
-              </div>
-              <div className='flex flex-col space-y-2 md:overflow-y-scroll md:h-96 md:pb-0 pb-12'>
-                <SafetyCard crimeLabel={"Bulgrary"} percentage={1} />
-                <SafetyCard crimeLabel={"Child Abuse"} percentage={70} />
-                <SafetyCard crimeLabel={"Drugs"} percentage={62} />
-                <SafetyCard crimeLabel={"Fraud"} percentage={23} />
-                <SafetyCard crimeLabel={"Homicide"} percentage={19} />
-                <SafetyCard crimeLabel={"Robbery"} percentage={88} />
-                <SafetyCard crimeLabel={"Theft"} percentage={56} />
-                <SafetyCard crimeLabel={"Trespass"} percentage={45} />
-                <SafetyCard crimeLabel={"Vandalism"} percentage={72} />
-                <SafetyCard crimeLabel={"Others"} percentage={12} />
-              </div>
-            </div>
+            <SafetyScore coors={coors} />
           </div>
         </div>
       )}
@@ -388,7 +385,11 @@ const Maps = ({ location }) => {
           address={selectedAddress}
         />
       )}
-      {!layers.length && <LoadingModal><p className="text-white">Loading Crime Data</p></LoadingModal>}
+      {!layers.length && (
+        <LoadingModal>
+          <p className='text-white font-bold text-lg'>Loading Crime Data</p>
+        </LoadingModal>
+      )}
     </div>
   );
 };

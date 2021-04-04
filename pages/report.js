@@ -13,7 +13,7 @@ const Report = () => {
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places`;
     script.setAttribute("id", "maps-api");
-    body.append(script);
+    document.body.append(script);
   }, []);
 
   return (
