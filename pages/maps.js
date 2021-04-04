@@ -221,11 +221,6 @@ const Maps = () => {
       ])
     );
 
-    //axios.get('api/data?type=gun')
-    //.then(({gunData})=>setLayers([scatterplot(gunData), hexagon(gunData), heatmap(gunData)]))
-    //.then(()=>axios.get('api/data?type=crime'))
-    //.then(({crimeData})=>setLayers([...layers, crimeScatterplot(crimeData)]))
-
     if (!!!document.getElementById("maps-api")) {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places`;

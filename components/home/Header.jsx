@@ -84,7 +84,7 @@ const Header = () => {
                             })}
                           />
                           <div className='outline-none border-none autocomplete-dropdown-container'>
-                            {suggestions.map((suggestion) => {
+                            {suggestions.map((suggestion, idx) => {
                               const isActive = suggestion.active;
                               const className = isActive
                                 ? "cursor-pointer border-b p-2 text-white bg-blue-500"
@@ -92,6 +92,7 @@ const Header = () => {
 
                               return (
                                 <div
+                                  key={idx}
                                   {...getSuggestionItemProps(suggestion, {
                                     className,
                                   })}>

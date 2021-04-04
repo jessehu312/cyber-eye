@@ -6,7 +6,7 @@ export default function Home() {
     <div>
       <Head>
         <title>Cyber.Eye</title>
-        <link rel='icon' href='/favicon.ico' />
+        <link rel='icon' href='/eye.png' />
       </Head>
       <Header />
     </div>

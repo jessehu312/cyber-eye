@@ -114,6 +114,7 @@ const SafetyScore = ({ coors }) => {
           <div className='flex flex-col space-y-2 md:overflow-y-scroll md:h-96 md:pb-0 pb-12'>
             {scores.map((score) => (
               <SafetyCard
+                key={score.name}
                 crimeLabel={score.name}
                 percentage={score.percentage}
               />
