@@ -40,8 +40,8 @@ const Maps = () => {
   const [alertModal, setAlertModal] = useState(false);
   const [layers, setLayers] = useState([]);
 
-  const scatterplot = (data) =>
-    new ScatterplotLayer({
+  const scatterplot = (data) => {
+    return new ScatterplotLayer({
       id: "scatter",
       data,
       opacity: 0.8,
@@ -84,9 +84,10 @@ const Maps = () => {
         });
       },
     });
+  };
 
-  const heatmap = (data) =>
-    new HeatmapLayer({
+  const heatmap = (data) => {
+    return new HeatmapLayer({
       id: "heat",
       data,
       getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [
@@ -96,9 +97,10 @@ const Maps = () => {
       getWeight: ([_0, _1, n_killed, n_injured]) => n_killed + n_injured * 0.5,
       radiusPixels: 60,
     });
+  };
 
-  const hexagon = (data) =>
-    new HexagonLayer({
+  const hexagon = (data) => {
+    return new HexagonLayer({
       id: "hex",
       data,
       getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [
@@ -122,9 +124,10 @@ const Maps = () => {
         [169, 221, 214],
       ],
     });
+  };
 
-  const crimeScatterplot = (data) =>
-    new ScatterplotLayer({
+  const crimeScatterplot = (data) => {
+    return new ScatterplotLayer({
       id: "crime-scatter",
       data,
       opacity: 0.8,
@@ -167,6 +170,7 @@ const Maps = () => {
         });
       },
     });
+  };
 
   const goHome = () => {
     setInitialViewState({
