@@ -53,14 +53,14 @@ const Maps = ({ location }) => {
       getPosition: ([_0, _1, _2, _3, latitude, longitude]) => [longitude, latitude],
       getFillColor: ([_0, _1, n_killed]) =>
         n_killed > 0 ? [200, 0, 40, 150] : [255, 140, 0, 100],
-
+  
       pickable: true,
       onClick: (info) => {
         const [incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories] = info.object
         setHoverInfo({...info, object: {incident_id, date, n_killed, n_injured, latitude, longitude, location, notes, categories}});
       },
     });
-
+  
   const heatmap = data =>
     new HeatmapLayer({
       id: "heat",
@@ -69,7 +69,7 @@ const Maps = ({ location }) => {
       getWeight: ([_0, _1, n_killed, n_injured]) => n_killed + n_injured * 0.5,
       radiusPixels: 60,
     });
-
+  
   const hexagon = data =>
     new HexagonLayer({
       id: "hex",
@@ -91,6 +91,25 @@ const Maps = ({ location }) => {
         [169, 221, 214],
       ],
     });
+  
+    const crimeScatterplot = data =>
+      new ScatterplotLayer({
+        id: "crime-scatter",
+        data,
+        opacity: 0.8,
+        filled: true,
+        radiusMinPixels: 2,
+        radiusMaxPixels: 8,
+        getPosition: ([_0, _1, _2, _3, _4, _5, _6, _7, latitude, longitude]) => [longitude, latitude],
+        getFillColor: ([_0, _1, _2, _3, _4, _5, arrest]) =>
+          arrest ? [125, 125, 125, 255] : [255, 255, 255, 255],
+    
+        pickable: true,
+        onClick: (info) => {
+          const [incident_id, date, block, primary_desc, secondary_desc, location_desc, arrest, domestic, latitude, longitude] = info.object
+          setHoverInfo({...info, object: {incident_id, date, latitude, longitude, location:`${location_desc} - ${block}`, notes:`${primary_desc} - ${secondary_desc}`, arrest, domestic}});
+        },
+      });
 
   const goHome = () => {
     setInitialViewState({
@@ -127,6 +146,15 @@ const Maps = ({ location }) => {
 
   useEffect(() => {
     if (!lat || !lng || !address) router.push("/");
+    
+    Promise.all([axios.get('api/data?type=gun').then(({data})=>data), axios.get('api/data?type=crime').then(({data})=>data)])
+    .then(([gunData, crimeData]) => setLayers([scatterplot(gunData), hexagon(gunData), heatmap(gunData), crimeScatterplot(crimeData)]));
+    
+    //axios.get('api/data?type=gun')
+    //.then(({gunData})=>setLayers([scatterplot(gunData), hexagon(gunData), heatmap(gunData)]))
+    //.then(()=>axios.get('api/data?type=crime'))
+    //.then(({crimeData})=>setLayers([...layers, crimeScatterplot(crimeData)]))
+
     if (!!!document.getElementById("maps-api")) {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places`;
@@ -141,11 +169,6 @@ const Maps = ({ location }) => {
       bearing: 0,
       pitch: 30,
     };
-    
-    axios.get('api/data?type=gun')
-    .then(({ data }) => {
-      setLayers([scatterplot(data), hexagon(data), heatmap(data)]);
-    });
 
     setInitialViewState(selectedLocation);
     setMapLoading(false);
@@ -230,12 +253,24 @@ const Maps = ({ location }) => {
                   </h1>
                   <p className='text-sm'>{hoverInfo?.object?.notes}</p>
                   <div className='flex flex-row space-x-2 mt-2 border-b pb-2'>
-                    <p className='text-xs border-r pr-2'>
-                      # Killed: {hoverInfo?.object?.n_killed} 💀
-                    </p>
-                    <p className='text-xs'>
-                      # Injured: {hoverInfo?.object?.n_injured} 🤕
-                    </p>
+                    {hoverInfo?.object?.n_killed !== undefined ? (
+                      <>
+                        <p className='text-xs border-r pr-2'>
+                          # Killed: {hoverInfo?.object?.n_killed} 💀
+                        </p>
+                        <p className='text-xs'>
+                          # Injured: {hoverInfo?.object?.n_injured} 🤕
+                        </p>
+                      </> ) : (
+                      <>
+                        <p className='text-xs border-r pr-2'>
+                          Arrest: {hoverInfo?.object?.arrest} 🚨
+                        </p>
+                        <p className='text-xs'>
+                          Domestic: {hoverInfo?.object?.domestic} 👊
+                        </p>
+                      </> )
+                    }
                   </div>
                   <div className='flex flex-row space-x-2 mt-2 pb-2'>
                     <p className='text-xs border-r pr-2'>
