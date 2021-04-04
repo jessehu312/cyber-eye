@@ -11,7 +11,6 @@ import PlacesAutocomplete, {
 import Router from "next/router";
 
 const Header = () => {
-  const { user } = useAuth();
   const [loaded, setLoaded] = useState(true);
   const [address, setAddress] = useState("");
   const [open, setOpen] = useState(false);
@@ -81,7 +80,6 @@ const Header = () => {
                             })}
                           />
                           <div className='outline-none border-none autocomplete-dropdown-container'>
-                            {/* {loading && <Loader />} */}
                             {suggestions.map((suggestion) => {
                               const isActive = suggestion.active;
                               const className = isActive
@@ -120,6 +118,13 @@ const Header = () => {
             </div>
           </div>
           {open && <SocialSignIn setOpen={setOpen} />}
+          {/* <embed
+            src='/audio/rain.mp3'
+            loop={true}
+            autostart={true}
+            width='2'
+            height='0'
+          /> */}
         </div>
       )}
     </>

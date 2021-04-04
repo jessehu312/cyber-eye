@@ -370,6 +370,7 @@ module.exports = {
       "5/6": "83.333333%",
       "screen-80": "80vh",
       full: "100%",
+      "75vh": "75vh",
       screen: "100vh",
     }),
     inset: (theme, { negative }) => ({
@@ -721,6 +722,8 @@ module.exports = {
       "10/12": "83.333333%",
       "11/12": "91.666667%",
       full: "100%",
+      "75vw": "75vw",
+      "85vw": "85vw",
       screen: "100vw",
       min: "min-content",
       max: "max-content",
@@ -742,7 +745,10 @@ module.exports = {
       colors: {
         primary: "#EA00D9",
         secondary: "#0ABDC6",
-        "dark-gray": "#181B23",
+        "dark-gray": "#252529",
+        "dark-gray-secondary": "303136",
+        "dark-red": "#FF0677",
+        "dark-green": "#48D76D",
       },
     },
   },

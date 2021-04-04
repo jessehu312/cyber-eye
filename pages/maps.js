@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/home/Navbar";
 import { useRouter } from "next/router";
+import Tabs from "@/components/home/Tabs";
 
 import DeckGL, {
   HexagonLayer,
@@ -10,8 +11,10 @@ import DeckGL, {
 } from "deck.gl";
 import { NavigationControl, StaticMap, MapContext } from "react-map-gl";
 import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
+import { PieChart } from "react-minimal-pie-chart";
 import sourceData from "../data/gundata.json";
 import Loader from "@/components/shared/Loader";
+import SafetyCard from "@/components/maps/SafetyCard";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -28,6 +31,8 @@ const Maps = () => {
     height: "100%",
     width: "100%",
   });
+
+  const [safetyScore, setSaferyScore] = useState(48);
 
   const scatterplot = () =>
     new ScatterplotLayer({
@@ -161,7 +166,7 @@ const Maps = () => {
           </svg>
         </div>
         <div className='text-white py-8 text-2xl font-semibold tracking-tight'>
-          tabs
+          <Tabs />
         </div>
       </div>
       {mapLoading ? (
@@ -169,71 +174,151 @@ const Maps = () => {
           <Loader />
         </div>
       ) : (
-        <div style={{ height: "75vh", width: "100vw", position: "relative" }}>
-          <DeckGL
-            viewport={viewport}
-            viewState={initialViewState}
-            onViewStateChange={(e) => setInitialViewState(e.viewState)}
-            controller={true}
-            layers={layers}
-            ContextProvider={MapContext.Provider}>
-            <StaticMap
-              mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
-              mapStyle='mapbox://styles/mapbox/dark-v9'
-            />
-            {hoverInfo && (
-              <div
-                className='bg-white p-2 rounded-sm border-primary border-2 max-w-sm'
+        <div className='flex flex-col md:flex-row'>
+          <div className='relative w-full md:w-75vw lg:w-85vw md:min-h-75vh h-75vh'>
+            <DeckGL
+              viewport={viewport}
+              viewState={initialViewState}
+              onViewStateChange={(e) => setInitialViewState(e.viewState)}
+              controller={true}
+              layers={layers}
+              ContextProvider={MapContext.Provider}>
+              <StaticMap
+                mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
+                mapStyle='mapbox://styles/mapbox/dark-v9'
+              />
+              {hoverInfo && (
+                <div
+                  className='bg-gray-900 text-white p-2 rounded-sm border-primary border-2 max-w-sm'
+                  style={{
+                    position: "absolute",
+                    zIndex: 1,
+                    pointerEvents: "none",
+                    left: hoverInfo.x,
+                    top: hoverInfo.y,
+                  }}>
+                  <h1 className='font-bold tracking-tight'>
+                    Incident #{hoverInfo?.object?.incident_id}
+                    <span className='ml-2 font-normal text-xs tracking-wide'>
+                      {hoverInfo?.object?.date}
+                    </span>
+                  </h1>
+                  <p className='text-sm'>{hoverInfo?.object?.notes}</p>
+                  <div className='flex flex-row space-x-2 mt-2 border-b pb-2'>
+                    <p className='text-xs border-r pr-2'>
+                      # Killed: {hoverInfo?.object?.n_killed} 💀
+                    </p>
+                    <p className='text-xs'>
+                      # Injured: {hoverInfo?.object?.n_injured} 🤕
+                    </p>
+                  </div>
+                  <div className='flex flex-row space-x-2 mt-2 pb-2'>
+                    <p className='text-xs border-r pr-2'>
+                      Lat: {hoverInfo?.object?.latitude}
+                    </p>
+                    <p className='text-xs'>
+                      Lng: {hoverInfo?.object?.longitude}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <NavigationControl
                 style={{
                   position: "absolute",
-                  zIndex: 1,
-                  pointerEvents: "none",
-                  left: hoverInfo.x,
-                  top: hoverInfo.y,
-                }}>
-                <h1 className='font-bold tracking-tight'>
-                  Incident #{hoverInfo?.object?.incident_id}
-                  <span className='ml-2 font-normal text-xs tracking-wide'>
-                    {hoverInfo?.object?.date}
-                  </span>
-                </h1>
-                <p className='text-sm'>{hoverInfo?.object?.notes}</p>
-                <div className='flex flex-row space-x-2 mt-2 border-b pb-2'>
-                  <p className='text-xs border-r pr-2'>
-                    # Killed: {hoverInfo?.object?.n_killed} 💀
-                  </p>
-                  <p className='text-xs'>
-                    # Injured: {hoverInfo?.object?.n_injured} 🤕
-                  </p>
+                  top: 10,
+                  left: 10,
+                }}
+              />
+              <div className='absolute right-0 top-0'>
+                <div
+                  onClick={goHome}
+                  className='bg-white text-gray-800 p-2 rounded-lg m-4'>
+                  🏠 Go home
                 </div>
-                <div className='flex flex-row space-x-2 mt-2 pb-2'>
-                  <p className='text-xs border-r pr-2'>
-                    Lat: {hoverInfo?.object?.latitude}
-                  </p>
-                  <p className='text-xs'>Lng: {hoverInfo?.object?.longitude}</p>
+                <div
+                  onClick={() => setHoverInfo(null)}
+                  className='bg-white text-gray-800 p-2 text-center rounded-lg m-4'>
+                  Clear Popup
                 </div>
               </div>
-            )}
-            <NavigationControl
-              style={{
-                position: "absolute",
-                top: 10,
-                left: 10,
-              }}
-            />
-            <div className='absolute right-0 top-0'>
-              <div
-                onClick={goHome}
-                className='bg-white text-gray-800 p-2 rounded-lg m-4'>
-                🏠 Go home
+            </DeckGL>
+          </div>
+          <div className='relative bg-dark-gray flex-1 md:min-h-75vh'>
+            <div className='text-white px-4 pt-8'>
+              <h1 className='text-4xl md:text-xl xl:text-3xl font-extrabold tracking-tight text-center'>
+                Safety Score
+              </h1>
+              <div className='w-full flex flex-row justify-center relative -mt-6'>
+                {safetyScore < 50 ? (
+                  <PieChart
+                    style={{ position: "relative" }}
+                    data={[{ value: safetyScore, color: "url(#gradient1)" }]}
+                    lineWidth={20}
+                    label={({ dataEntry }) => dataEntry.value + "%"}
+                    labelStyle={{
+                      fontSize: "14px",
+                      fontFamily: "sans-serif",
+                      fill: "#9D1525",
+                      fontWeight: 900,
+                    }}
+                    labelPosition={0}
+                    rounded
+                    animate
+                    animationDuration={5000}
+                    startAngle={0}
+                    endAngle={360}
+                    radius={30}>
+                    <defs>
+                      <linearGradient id='gradient1'>
+                        <stop offset='0%' stopColor='#9D1525' />
+                        <stop offset='65%' stopColor='#8A0B21' />
+                        <stop offset='100%' stopColor='#560616' />
+                      </linearGradient>
+                    </defs>
+                  </PieChart>
+                ) : (
+                  <PieChart
+                    style={{ position: "relative" }}
+                    data={[{ value: safetyScore, color: "url(#gradient1)" }]}
+                    lineWidth={20}
+                    label={({ dataEntry }) => dataEntry.value + "%"}
+                    labelStyle={{
+                      fontSize: "14px",
+                      fontFamily: "sans-serif",
+                      fill: safetyScore < 50 ? "#9D1525" : "#2DB52D",
+                      fontWeight: 900,
+                    }}
+                    labelPosition={0}
+                    rounded
+                    animate
+                    animationDuration={5000}
+                    startAngle={0}
+                    endAngle={360}
+                    radius={30}>
+                    <defs>
+                      <linearGradient id='gradient1'>
+                        <stop offset='0%' stopColor='#57C74D' />
+                        <stop offset='65%' stopColor='#2DB52D' />
+                        <stop offset='100%' stopColor='#2DB52D' />
+                      </linearGradient>
+                    </defs>
+                  </PieChart>
+                )}
               </div>
-              <div
-                onClick={() => setHoverInfo(null)}
-                className='bg-white text-gray-800 p-2 text-center rounded-lg m-4'>
-                Clear Popup
+              <div className='flex flex-col space-y-2 md:overflow-y-scroll md:h-96 md:pb-0 pb-12'>
+                <SafetyCard crimeLabel={"Bulgrary"} percentage={1} />
+                <SafetyCard crimeLabel={"Child Abuse"} percentage={70} />
+                <SafetyCard crimeLabel={"Drugs"} percentage={62} />
+                <SafetyCard crimeLabel={"Fraud"} percentage={23} />
+                <SafetyCard crimeLabel={"Homicide"} percentage={19} />
+                <SafetyCard crimeLabel={"Robbery"} percentage={88} />
+                <SafetyCard crimeLabel={"Theft"} percentage={56} />
+                <SafetyCard crimeLabel={"Trespass"} percentage={45} />
+                <SafetyCard crimeLabel={"Vandalism"} percentage={72} />
+                <SafetyCard crimeLabel={"Others"} percentage={12} />
               </div>
             </div>
-          </DeckGL>
+          </div>
         </div>
       )}
     </div>
