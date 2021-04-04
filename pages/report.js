@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/home/Navbar";
 import { useState } from "react";
+import Head from "next/head";
 
 const Report = () => {
   const [address, setAddress] = useState();
@@ -18,6 +19,10 @@ const Report = () => {
 
   return (
     <div className='min-h-screen bg-black'>
+      <Head>
+        <title>Cyber.Eye</title>
+        <link rel='icon' href='/eye.png' />
+      </Head>
       <Navbar />
       <div className='mx-auto max-w-screen-lg relative px-6 xl:px-0'>
         <h1 className='text-primary text-3xl mb-4 font-semibold'>

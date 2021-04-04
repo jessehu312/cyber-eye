@@ -22,6 +22,7 @@ export default async ({ query: { type } }, res) => {
       return res.status(404);
   }
 
+  console.log(type, result.status, result.statusText);
   dataCache.put(type, result.data);
   res.json(result.data);
 };

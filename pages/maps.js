@@ -17,6 +17,7 @@ import SafetyScore from "@/components/maps/SafetyScore";
 import queryString from "query-string";
 import LoadingModal from "@/components/shared/LoadingModal";
 import axios from "axios";
+import Head from "next/head";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -242,6 +243,10 @@ const Maps = () => {
 
   return (
     <div className='min-h-screen bg-black'>
+      <Head>
+        <title>Cyber.Eye</title>
+        <link rel='icon' href='/eye.png' />
+      </Head>
       <ToastContainer />
       <Navbar />
       <div className='max-w-screen-lg mx-auto relative px-6 xl:px-0'>
