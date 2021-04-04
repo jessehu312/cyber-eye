@@ -9,6 +9,7 @@ from flask import Flask, request
 import requests
 import psycopg2
 import hashlib
+import os
 
 
 
@@ -45,7 +46,7 @@ def addincident(conn, address, typ, desc, date, userid):
     istr = userid + ":" + typ + ":" + date  + ":" + address
 
     h = hashthis(istr)
-    return i, votestr, h
+    return i, istr, h
 
 def loadchain(conn, blockchain, eid):
     
@@ -59,22 +60,29 @@ def loadchain(conn, blockchain, eid):
 
     # print(chain)
 
-    col = db.elections
-
-    for x in col.find():
-        if x['id'] == eid:
-            found = 1
-            chainstr =  x['chain']
-
-            chain = []
-            chain_data = json.loads(chainstr)
-            for c in chain_data:
-                b = Block(c["index"], c["transactions"], c["timestamp"], c["previous_hash"], c["data"])
-                b.hash = c['hash'] 
-                chain.append(b)
-            
+    with conn.cursor() as cur:
+        cur.execute("SELECT id, chain, FROM chains")
+        rows = cur.fetchall()
+        conn.commit()
+        # print(f"Balances at {time.asctime()}:")
+        i = 1
+        for row in rows:
+            i = i + 1
+            if row[0] == eid:
+                found = 1
+                chainstr = row[1]
+                chain = []
+                chain_data = json.loads(chainstr)
+                for c in chain_data:
+                    b = Block(c["index"], c["transactions"], c["timestamp"], c["previous_hash"], c["data"])
+                    b.hash = c['hash'] 
+                    chain.append(b)
+                
             # print(chain)
             blockchain.load_chain(chain)
+        i = str(i)
+        return blockchain
+
     
     return blockchain
 
