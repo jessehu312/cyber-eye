@@ -59,7 +59,7 @@ const Report = () => {
   }, []);
 
   const Submit = () => {
-    axios.put('api/blockchain?proxyRoute=add2chain', {
+    axios.post('api/blockchain?proxyRoute=add2chain', {
         "address": address,
         "type": crimeType,
         "description": report,
