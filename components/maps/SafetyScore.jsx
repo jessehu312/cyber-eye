@@ -11,7 +11,7 @@ const SafetyScore = ({ coors }) => {
 
   useEffect(() => {
     const fetchScores = async () => {
-      const response = await axios.post("/api/proxy?proxyRoute=cybereye", {
+      const response = await axios.post("/api/proxy?proxyRoute=cycbereye", {
         action: "getcrimescore",
         lat: coors.lat,
         lon: coors.lng,
